@@ -37,6 +37,7 @@ func returnSingleArticle(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// function for creating new article
 func createNewArticle(w http.ResponseWriter, r *http.Request) {
 	reqBody, _ := ioutil.ReadAll(r.Body)
 
@@ -44,6 +45,20 @@ func createNewArticle(w http.ResponseWriter, r *http.Request) {
 	json.Unmarshal(reqBody, &post)
 	Articles = append(Articles, post)
 	json.NewEncoder(w).Encode(post)
+}
+
+// function for deleting new article
+func deleteSingleArticle(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	key := vars["id"]
+
+	for index, article := range Articles {
+		if article.Id == key {
+			Articles = append(Articles[:index], Articles[index+1:]...)
+			json.NewEncoder(w).Encode("success: delete")
+		}
+
+	}
 }
 
 func homePage(w http.ResponseWriter, r *http.Request) {
@@ -57,6 +72,8 @@ func handleRequests() {
 	router.HandleFunc("/", homePage)
 	router.HandleFunc("/articles", returnAllArticles)
 	router.HandleFunc("/article", createNewArticle).Methods("POST")
+
+	router.HandleFunc("/article/{id}", deleteSingleArticle).Methods("DELETE")
 
 	router.HandleFunc("/article/{id}", returnSingleArticle)
 	log.Fatal(http.ListenAndServe((":10000"), router))
